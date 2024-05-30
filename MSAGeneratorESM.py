@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import random
 from transformers import pipeline
+from datasets import Dataset
 
 
 class MSAGeneratorESM(MSAGenerator):
@@ -18,8 +19,14 @@ class MSAGeneratorESM(MSAGenerator):
         :param number_state_spin: number of states (20 amino acids + 1 gap)
         """
         super().__init__(number_of_nodes, number_state_spin)
+        if torch.cuda.is_available():
+            device = torch.device("cuda")
+        else:
+            device = torch.device("cpu")
         # Set the model
-        self.pipe = pipeline("fill-mask", model="facebook/esm2_t6_8M_UR50D")
+        # Load model directly
+        self.pipe = pipeline("fill-mask", model="facebook/esm2_t6_8M_UR50D", device=device)
+
         # Set the map for computing the sequences
         self.amino_acid_map = {char: index for index, char in enumerate(self.pipe.tokenizer.all_tokens) if char in
                                ['L', 'A', 'G', 'V', 'S', 'E', 'R', 'T', 'I', 'D', 'P', 'K', 'Q', 'N', 'F', 'Y', 'M',
@@ -66,52 +73,69 @@ class MSAGeneratorESM(MSAGenerator):
         :param l_spin: given sequence
         :return: modified sequence
         """
-        # Set the parameters
-        selected_node, new_state, c_mutation = 0, 0, 0
+        n = 64
+
+        # Set the number of mutations
+        c_mutation = 0
 
         # Until the number of mutation is not achieved
         while c_mutation < number_of_mutation:
+            c_mutations1 = c_mutation
             # Select one position to mutate in the sequence
-            selected_node = np.random.randint(0, self.number_of_nodes)
+            selected_nodes = np.random.choice(np.arange(self.number_of_nodes), size=n, replace=True)
 
             # Select a new state
-            new_state = np.random.randint(min(self.amino_acid_map.values()), max(self.amino_acid_map.values()) - 1)
+            new_states = np.random.randint(low=min(self.amino_acid_map.values()),
+                                           high=max(self.amino_acid_map.values()) - 1, size=n)
 
             # Avoid to select the same state as before
-            if new_state >= l_spin[selected_node]:
-                new_state += 1
+            for i in range(n):
+                if new_states[i] >= l_spin[selected_nodes[i]]:
+                    new_states[i] += 1
 
             protein_sequence = self.transform_array_to_sequence(l_spin)
+
+            masked_sequences = []
             # Mask the position
-            masked_sequence = protein_sequence[:selected_node] + "<mask>" + protein_sequence[selected_node + 1:]
+            for selected_node in selected_nodes:
+                masked_sequence = protein_sequence[:selected_node] + "<mask>" + protein_sequence[selected_node + 1:]
+                masked_sequences.append(masked_sequence)
 
             self.pipe.model.eval()
-
             with torch.no_grad():
+                dataset = Dataset.from_dict({"sequences": masked_sequences})
                 # Get the probabilities
-                predictions = pd.DataFrame(self.pipe(masked_sequence, top_k=33))
+                predictions = self.pipe(dataset['sequences'], top_k=33)
 
-            score_old = predictions.loc[predictions['token'] == l_spin[selected_node], 'score'].values
-            score_new = predictions.loc[predictions['token'] == new_state, 'score'].values
+            for i in range(n):
+                prediction = predictions[i]
+                prediction = pd.DataFrame(prediction)
+                score_old = prediction.loc[prediction['token'] == l_spin[selected_nodes[i]], 'score'].values
+                score_new = prediction.loc[prediction['token'] == new_states[i], 'score'].values
 
-            if len(score_old) > 0:
-                p_old = float(score_old[0])
-            else:
-                raise ValueError
+                if len(score_old) > 0:
+                    p_old = float(score_old[0])
+                else:
+                    raise ValueError
 
-            if len(score_new) > 0:
-                p_new = float(score_new[0])
-            else:
-                raise ValueError
+                if len(score_new) > 0:
+                    p_new = float(score_new[0])
+                else:
+                    raise ValueError
 
-            if len(score_new) > 1 or len(score_old) > 1:
-                print(predictions)
+                if len(score_new) > 1 or len(score_old) > 1:
+                    print(predictions)
 
-            # Compute the ratio between probabilities
-            p = p_new / p_old
-            # If the difference is positive or if it is greater than a random value, apply the mutation
-            if random.random() < p or p >= 1:
-                # Modify the selected position with the new selected state
-                l_spin[selected_node] = new_state
-                # Increase the number of mutation applied
-                c_mutation += 1
+                # Compute the ratio between probabilities
+                p = p_new / p_old
+
+                # If the difference is positive or if it is greater than a random value, apply the mutation
+                if random.random() < p or p >= 1:
+                    # Modify the selected position with the new selected state
+                    l_spin[selected_nodes[i]] = new_states[i]
+                    # Increase the number of mutation applied
+                    c_mutation += 1
+                    break
+
+            if c_mutations1 == c_mutation:
+                print("Muori")

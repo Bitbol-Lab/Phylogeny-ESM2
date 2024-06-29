@@ -58,6 +58,7 @@ This project generates a phylogenetic tree from a natural multiple sequence alig
 * FastTree
 * IQTree
 * MAFFT
+* HMMER
 
 To install MAFFT:
    ```sh
@@ -67,7 +68,7 @@ To install MAFFT:
 ### Installation
 1. Clone the repo
    ```sh
-   git clone ?
+   git clone https://github.com/Bitbol-Lab/Phylogeny-ESM2.git
    ```
 2. Install the requirements
    ```sh

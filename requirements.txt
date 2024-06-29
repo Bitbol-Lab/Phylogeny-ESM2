@@ -1,0 +1,7 @@
+matplotlib~=3.8.4
+numpy~=1.26.4
+torch~=1.13.1
+transformers~=4.37.2
+pandas~=2.2.1
+scipy~=1.11.4
+biopython~=1.83

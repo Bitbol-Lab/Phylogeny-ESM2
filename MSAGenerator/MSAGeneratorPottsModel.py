@@ -5,13 +5,13 @@ from MSAGenerator import MSAGenerator
 
 class MSAGeneratorPottsModel(MSAGenerator):
     """
-    Class that generates an MSA based on a single sequence using Potts Model
+    Class that generates an MSA based on a single sequence using Potts Model.
     """
     def __init__(self, field, coupling):
         """
-        Constructor method
-        :param field: parameter that can be inferred from data by DCA methods
-        :param coupling: parameters that can be inferred from data by DCA methods
+        Constructor method.
+        :param field: parameter that can be inferred from data by DCA methods.
+        :param coupling: parameters that can be inferred from data by DCA methods.
         """
         super().__init__(np.intc(field.shape[0]), np.intc(field.shape[1]))
         # Set fields and couplings
@@ -20,12 +20,12 @@ class MSAGeneratorPottsModel(MSAGenerator):
 
     def msa_tree_phylo(self, clade_root, flip_before_start, first_sequence, neff=1.0):
         """
-        Initialize the MSA and start the recursion to compute node sequences
-        :param clade_root: root of the tree
-        :param flip_before_start: number of mutations to apply to the random generated sequence
-        :param first_sequence: first sequence (root)
-        :param neff: number of mutations per site per branch length
-        :return: MSA of the sequences in the leafs of the phylogenetic tree
+        Initialize the MSA and start the recursion to compute node sequences.
+        :param clade_root: root of the tree.
+        :param flip_before_start: number of mutations to apply to the random generated sequence.
+        :param first_sequence: first sequence (root).
+        :param neff: number of mutations per site per branch length.
+        :return: MSA of the sequences in the leafs of the phylogenetic tree.
         """
         # Create a synthetic first sequence
         first_sequence = np.random.randint(0, high=self.number_state_spin, size=self.number_of_nodes,
@@ -39,10 +39,10 @@ class MSAGeneratorPottsModel(MSAGenerator):
   
     def mcmc(self, number_of_mutation, l_spin):
         """
-        Apply to the given sequence the given number of mutations
-        :param number_of_mutation: given number of mutations
-        :param l_spin: given sequence
-        :return: modified sequence
+        Apply to the given sequence the given number of mutations.
+        :param number_of_mutation: given number of mutations.
+        :param l_spin: given sequence.
+        :return: modified sequence.
         """
         # Set the parameters
         selected_node, new_state, c_mutation = 0, 0, 0
@@ -71,11 +71,11 @@ class MSAGeneratorPottsModel(MSAGenerator):
 
     def pseudo_hamiltonian(self, node, state_node, l_spin):
         """
-        Compute the pseudo Hamiltonian for computing the differences between Hamiltonian
-        :param node: selected position in the sequence to be mutated
-        :param state_node: state (amino acid) to consider for the mutation
-        :param l_spin: sequence to be mutated
-        :return: pseudo Hamiltonian
+        Compute the pseudo Hamiltonian for computing the differences between Hamiltonian.
+        :param node: selected position in the sequence to be mutated.
+        :param state_node: state (amino acid) to consider for the mutation.
+        :param l_spin: sequence to be mutated.
+        :return: pseudo Hamiltonian.
         """
         # Initialize the pseudo hamiltonian
         hamiltonian = self.field[node, state_node] - self.coupling[node, node, state_node, l_spin[node]]

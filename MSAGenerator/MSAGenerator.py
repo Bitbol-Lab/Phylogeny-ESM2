@@ -4,12 +4,12 @@ from abc import ABC, abstractmethod
 
 class MSAGenerator(ABC):
     """
-    Class that generates an MSA based on a single sequence
+    Class that generates an MSA based on a single sequence.
     """
 
     def __init__(self, number_of_nodes, number_state_spin):
         """
-        Constructor method
+        Constructor method.
         """
         # Set the number of nodes as the length of the sequence
         self.number_of_nodes = number_of_nodes
@@ -27,12 +27,12 @@ class MSAGenerator(ABC):
 
     def msa_tree_phylo_recur(self, clade_root, previous_sequence, msa, neff):
         """
-        Recurrent function to create the MSA for a given tree
-        :param clade_root:
-        :param previous_sequence: initial sequence to be mutated
-        :param msa: MSA of the sequences in the leafs of the phylogenetic tree
-        :param neff: number of mutations per site per branch length
-        :return: modified MSA
+        Recurrent function to create the MSA for a given tree.
+        :param clade_root: root of the current clade.
+        :param previous_sequence: initial sequence to be mutated.
+        :param msa: MSA of the sequences in the leafs of the phylogenetic tree.
+        :param neff: number of mutations per site per branch length.
+        :return: modified MSA.
         """
         # Define the new sequence as a vector with the same length of the previous sequence
         new_sequence = np.zeros((previous_sequence.shape[0]), dtype=np.int8)
@@ -45,16 +45,11 @@ class MSAGenerator(ABC):
                 new_sequence[:] = previous_sequence
                 # Compute number of mutations
                 n_mutations = int(clade.branch_length * new_sequence.shape[0] * neff)
-                print(n_mutations)
                 # Create new sequence with the given number of mutations
                 self.mcmc(n_mutations, new_sequence)
                 # Recursive step
                 self.msa_tree_phylo_recur(clade, new_sequence, msa, neff)
         else:  # If b is a leaf
-            # Compute number of mutations
-            # n_mutations = int(clade_root.branch_length * previous_sequence.shape[0] * neff)
-            # Create new sequence with the given number of mutations (sequence is not copied because base case)
-            # self.mcmc(n_mutations, previous_sequence)
             # Save the leaf sequence in the MSA
             msa[int(clade_root.name), :] = previous_sequence
             print(clade_root.name)

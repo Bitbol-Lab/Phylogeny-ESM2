@@ -1,10 +1,10 @@
 <a name="readme-top"></a>
 
-# Title
+# Monte-Carlo generation of synthetic multiple sequence alignments along phylogenetic trees using a protein language model
 
-**Lab Immersion at EPFL**
-**Lab:** Bitbol Lab – Laboratory of Computational Biology and Theoretical Biophysics
-**Professor:** Anne-Florence Bitbol
+**Lab Immersion at EPFL**  
+**Lab:** Bitbol Lab – Laboratory of Computational Biology and Theoretical Biophysics  
+**Professor:** Anne-Florence Bitbol  
 **Supervisors**: Umberto Lupo, Damiano Sgarbossa, Cyril Antoine Malbranke
 
 

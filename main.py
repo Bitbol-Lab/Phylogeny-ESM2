@@ -28,7 +28,7 @@ def construct_tree(path_msa, dir_tree, tree_method):
         SeqIO.write(natural_msa, path_msa, "fasta")
 
     if tree_method == 'FastTree':  # Build the tree using FastTree
-        command = ["./FastTree", path_msa]
+        command = ["FastTree", path_msa]
         os.makedirs(dir_tree + 'FastTree/', exist_ok=True)
         path_tree = dir_tree + 'FastTree/' + filename_without_extension + '.newick'
         with open(path_tree, "w") as outfile:

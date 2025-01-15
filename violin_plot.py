@@ -124,4 +124,5 @@ if __name__ == '__main__':
         ax.violinplot([data_synthetic, data_natural], pos)
         ax.set_ylabel("HMMER Scores")
         ax.set_xticks(pos, ["Synthetic", "Natural"])
+        ax.set_title(synthetic_hmmer_scores.iloc[i]["Family"])
         fig.show()
